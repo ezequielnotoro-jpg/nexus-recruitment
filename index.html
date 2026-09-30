@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS — Reclutamiento</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#08090d;color:#f4f4f6;font-family:Arial,sans-serif}
+.wrap{max-width:760px;margin:auto;padding:22px}.brand{text-align:center;margin:18px 0 28px}
+.logo{font-size:48px;font-weight:900;letter-spacing:8px;color:#8b5cf6;text-shadow:0 0 25px #6d28d9}
+.sub{color:#9ca3af}.card{background:#11131a;border:1px solid #262938;border-radius:20px;padding:22px;margin-bottom:16px;box-shadow:0 10px 35px #0008}
+h2{margin-top:0}label{display:block;margin:14px 0 7px;color:#d1d5db;font-weight:700}
+input,select,textarea{width:100%;padding:13px;border-radius:12px;border:1px solid #343746;background:#0b0d12;color:white;font-size:15px}
+textarea{min-height:100px;resize:vertical}.req{font-size:13px;color:#9ca3af;line-height:1.6}
+button{width:100%;padding:14px;border:0;border-radius:13px;background:#7c3aed;color:white;font-weight:800;font-size:16px;cursor:pointer;margin-top:16px}
+button:disabled{opacity:.6}.result{display:none;margin-top:18px;padding:16px;border-radius:14px;line-height:1.5}
+.ok{background:#052e1b;border:1px solid #16a34a}.bad{background:#3a0a0a;border:1px solid #ef4444}.review{background:#332300;border:1px solid #f59e0b}
+small{color:#9ca3af}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><div class="logo">NEXUS</div><div class="sub">FORMULARIO OFICIAL DE RECLUTAMIENTO</div></div>
+  <div class="card">
+    <h2>Requisitos</h2>
+    <div class="req">
+      • Edad: 10 a 20 años<br>
+      • Nivel de Evade: mínimo 20<br>
+      • Mínimo 7 horas de juego por semana<br>
+      • No pertenecer a otro clan o team<br>
+      • Aceptar las reglas de NEXUS<br>
+      • Actividad diaria en el grupo: se revisa manualmente<br>
+      • Micrófono y prueba de habilidad: no son necesarios
+    </div>
+  </div>
+  <form id="form" class="card">
+    <h2>Postulación</h2>
+    <label>Usuario de Roblox *</label><input name="robloxUsername" required placeholder="Ej: Lanz_123">
+    <label>Edad *</label><input name="age" type="number" min="1" max="100" required>
+    <label>Nivel de Evade *</label><input name="evadeLevel" type="number" min="0" required>
+    <label>¿Cuántas horas juegas Evade por semana? *</label><input name="weeklyHours" type="number" min="0" step="0.5" required>
+    <label>¿Actualmente perteneces a otro clan o team? *</label>
+    <select name="otherClan" required><option value="">Selecciona</option><option value="no">No</option><option value="si">Sí</option></select>
+    <label>¿Aceptas las reglas de NEXUS? *</label>
+    <select name="rulesAccepted" required><option value="">Selecciona</option><option value="si">Sí</option><option value="no">No</option></select>
+    <label>¿Por qué quieres entrar a NEXUS? *</label><textarea name="reason" required placeholder="Cuéntanos brevemente..."></textarea>
+    <label style="font-weight:normal"><input type="checkbox" name="truthful" value="si" required style="width:auto;margin-right:8px"> Confirmo que la información proporcionada es verdadera.</label>
+    <button id="send">ENVIAR POSTULACIÓN</button>
+    <div id="result" class="result"></div>
+  </form>
+</div>
+<script>
+const form=document.getElementById("form"),btn=document.getElementById("send"),result=document.getElementById("result");
+form.addEventListener("submit",async e=>{
+ e.preventDefault();btn.disabled=true;btn.textContent="VERIFICANDO...";
+ result.style.display="none";
+ const data=Object.fromEntries(new FormData(form).entries());
+ try{
+   const r=await fetch("/api/applications",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+   const j=await r.json();
+   result.style.display="block";
+   if(j.status==="rejected"){
+     result.className="result bad";
+     result.innerHTML="<b>🔴 SOLICITUD RECHAZADA</b><br>"+j.failures.map(x=>"• "+x).join("<br>")+"<br><br><small>ID: "+j.applicationId+"</small>";
+   }else{
+     result.className="result review";
+     result.innerHTML="<b>🟡 SOLICITUD ENVIADA</b><br>Tu postulación cumple los requisitos automáticos y quedó pendiente de revisión de un administrador de NEXUS.<br><br><small>ID: "+j.applicationId+"</small>";
+   }
+   form.reset();
+ }catch(err){
+   result.style.display="block";result.className="result bad";result.textContent="No se pudo enviar la solicitud. Intenta nuevamente.";
+ }
+ btn.disabled=false;btn.textContent="ENVIAR POSTULACIÓN";
+});
+</script>
+</body>
+</html>
